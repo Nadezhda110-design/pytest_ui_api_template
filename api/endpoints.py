@@ -36,7 +36,7 @@ class SearchEndpoint:
 
         # Проверяем статус ответа
         assert response.status_code == 200, f"Ошибка API: {response.status_code}"
-
+        x = response.json()
         return response.json()
 
     @allure.step("Поиск по автору")
