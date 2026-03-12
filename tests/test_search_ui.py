@@ -6,6 +6,7 @@ from pages.search_page import SearchPage
 
 @allure.feature("Поиск на сайте Читай-город")
 @allure.story("Поисковая строка")
+@pytest.mark.ui
 class TestSearch:
 
     @allure.title("Поиск книги по названию на кириллице")

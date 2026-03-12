@@ -30,53 +30,6 @@ def driver():
 
     yield driver
 
-    # Прикрепляем скриншот в случае падения теста
-    if hasattr(pytest, "current_test") and pytest.current_test.rep_call.failed:
-        allure.attach(
-            driver.get_screenshot_as_png(),
-            name="screenshot_on_failure",
-            attachment_type=allure.attachment_type.PNG
-        )
-
     driver.quit()
 
 
-@pytest.hookimpl(tryfirst=True, hookwrapper=True)
-def pytest_runtest_makereport(item, call):
-    """Хук для получения результата теста."""
-    outcome = yield
-    rep = outcome.get_result()
-    setattr(item, "rep_" + rep.when, rep)
-
-
-@pytest.fixture
-def api_client():
-    """Фикстура для создания API клиента."""
-    client = ApiClient()
-    yield client
-    client.close()
-
-
-@pytest.fixture
-def search_endpoint(api_client):
-    """Фикстура для создания эндпоинта поиска."""
-    from api.endpoints import SearchEndpoint
-    return SearchEndpoint(api_client)
-
-
-@pytest.hookimpl(tryfirst=True, hookwrapper=True)
-def pytest_runtest_makereport(item, call):
-    """Хук для добавления информации в отчет при падении теста."""
-    outcome = yield
-    rep = outcome.get_result()
-
-    if rep.when == "call" and rep.failed:
-        # При падении теста добавляем дополнительную информацию
-        if hasattr(item, "funcargs"):
-            if "api_client" in item.funcargs:
-                client = item.funcargs["api_client"]
-                allure.attach(
-                    "API тест упал. Проверьте запросы выше.",
-                    name="failure_info",
-                    attachment_type=allure.attachment_type.TEXT
-                )

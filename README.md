@@ -18,12 +18,11 @@
 - pytest
 - selenium
 - requests
-- _sqlalchemy_
 - allure
 - config
 
 ### Струткура:
-- ./test - тесты
+- ./tests - тесты
 - - tests/test_search_ui.py – UI‑тесты поиска (5 шт.)
 - - tests/test_search_api.py – API‑тесты поиска (5 шт.)
 - ./pages - Page Object для UI‑тестов
