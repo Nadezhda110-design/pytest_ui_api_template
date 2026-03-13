@@ -4,7 +4,6 @@ from selenium.webdriver.remote.webdriver import WebDriver
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.common.exceptions import TimeoutException
-import time
 
 
 class SearchPage:
@@ -13,31 +12,42 @@ class SearchPage:
     Актуальные локаторы для сайта Читай-город.
     """
 
-    # --- Локаторы (ОБНОВЛЕНЫ на основе реальной структуры сайта) ---
-    _search_input_locator = (By.CSS_SELECTOR, "input.search-form__input--search#app-search")
-    _search_button_locator = (By.CSS_SELECTOR, "button.search-form__button-search[type='submit']")
+    # --- Локаторы  ---
+    _search_input_locator = (By.CSS_SELECTOR,
+                             "input.search-form__input--search#app-search")
+    _search_button_locator = (By.CSS_SELECTOR,
+                            "button.search-form__button-search[type='submit']")
 
-    # ОБНОВЛЕНО: Локатор для карточки товара
-    _product_card_locator = (By.CSS_SELECTOR, "article.product-card, div.product-card")
+    # Локатор для карточки товара
+    _product_card_locator = (By.CSS_SELECTOR,
+                             "article.product-card, div.product-card")
 
-    # ОБНОВЛЕНО: Локатор для названия книги (на основе предоставленного HTML)
-    _product_title_locator = (By.CSS_SELECTOR, "a.product-card__title")
+    # Локатор для названия книги
+    _product_title_locator = (By.CSS_SELECTOR,
+                              "a.product-card__title")
 
-    # ДОБАВЛЕНО: Альтернативный локатор для названия (если структура меняется)
-    _product_title_alt_locator = (By.CSS_SELECTOR, "[class*='product-card__title']")
+    #  Альтернативный локатор для названия (если структура меняется)
+    _product_title_alt_locator = (By.CSS_SELECTOR,
+                                  "[class*='product-card__title']")
 
-    # ОБНОВЛЕНО: Локатор для автора (на основе предоставленного HTML)
+    #  Локатор для автора
     # В ссылке есть атрибут title с полным именем автора
-    _product_author_locator = (By.CSS_SELECTOR, "a.product-card__title")
+    _product_author_locator = (By.CSS_SELECTOR,
+                               "a.product-card__title")
 
     # Локатор для сообщения "Ничего не найдено"
-    _no_results_message_locator = (By.CSS_SELECTOR, ".catalog-empty-message, .not-found-message, .empty-results")
+    _no_results_message_locator = (By.CSS_SELECTOR,
+                        ".catalog-empty-message, "
+                        ".not-found-message, "
+                        ".empty-results")
 
     # Локатор для пагинации (признак того, что результаты загружены)
-    _pagination_locator = (By.CSS_SELECTOR, ".pagination, .catalog-pagination")
+    _pagination_locator = (By.CSS_SELECTOR,
+                           ".pagination, .catalog-pagination")
 
     # Локатор для счетчика результатов
-    _results_count_locator = (By.CSS_SELECTOR, ".catalog-count, .products-count, .search-results-count")
+    _results_count_locator = (By.CSS_SELECTOR,
+                    ".catalog-count, .products-count, .search-results-count")
 
     # -------------------------------------------------
 
@@ -45,25 +55,29 @@ class SearchPage:
         self.driver = driver
         self.wait = WebDriverWait(driver, 20)
 
+    URL = "https://www.chitai-gorod.ru"
+
     @allure.step("Открыть главную страницу")
-    def open_main_page(self, url: str = "https://www.chitai-gorod.ru"):
+    def open_main_page(self, url: str = URL):
         """Открывает главную страницу сайта."""
         self.driver.get(url)
         self.driver.maximize_window()
         # Ждем загрузки поисковой строки
-        self.wait.until(EC.visibility_of_element_located(self._search_input_locator))
-        time.sleep(1)  # Небольшая пауза для загрузки всех элементов
+        self.wait.until(EC.visibility_of_element_located
+                        (self._search_input_locator))
 
     @allure.step("Ввести поисковый запрос: '{query}'")
     def enter_search_query(self, query: str):
         """Вводит текст в поле поиска."""
-        search_input = self.wait.until(EC.element_to_be_clickable(self._search_input_locator))
+        search_input = self.wait.until(EC.element_to_be_clickable
+                                       (self._search_input_locator))
         search_input.clear()
         search_input.send_keys(query)
 
         # Проверяем, что текст ввелся
         entered_value = search_input.get_attribute("value")
-        assert entered_value == query, f"Текст '{query}' не ввелся. В поле: '{entered_value}'"
+        assert entered_value == query, \
+            f"Текст '{query}' не ввелся. В поле: '{entered_value}'"
 
         allure.attach(
             self.driver.get_screenshot_as_png(),
@@ -74,9 +88,10 @@ class SearchPage:
     @allure.step("Нажать на кнопку 'Поиск' (иконка лупы)")
     def click_search_button(self):
         """Кликает по кнопке поиска."""
-        search_button = self.wait.until(EC.element_to_be_clickable(self._search_button_locator))
-        self.driver.execute_script("arguments[0].scrollIntoView(true);", search_button)
-        time.sleep(0.5)
+        search_button = self.wait.until(EC.element_to_be_clickable
+                                        (self._search_button_locator))
+        (self.driver.execute_script
+         ("arguments[0].scrollIntoView(true);", search_button))
         search_button.click()
 
         allure.attach(
@@ -94,9 +109,6 @@ class SearchPage:
         # Ждем появления карточек товаров или сообщения об ошибке
         self._wait_for_search_results()
 
-        # Дополнительная проверка, что результаты действительно загрузились
-        time.sleep(2)  # Даем время на полную загрузку
-
         return self
 
     def _wait_for_search_results(self, timeout: int = 15):
@@ -106,10 +118,14 @@ class SearchPage:
             WebDriverWait(self.driver, timeout).until(
                 EC.any_of(
                     EC.presence_of_element_located(self._product_card_locator),
-                    EC.presence_of_element_located(self._product_title_locator),
-                    EC.presence_of_element_located(self._pagination_locator),
-                    EC.presence_of_element_located(self._results_count_locator),
-                    EC.presence_of_element_located(self._no_results_message_locator)
+                    EC.presence_of_element_located
+                    (self._product_title_locator),
+                    EC.presence_of_element_located
+                    (self._pagination_locator),
+                    EC.presence_of_element_located
+                    (self._results_count_locator),
+                    EC.presence_of_element_located
+                    (self._no_results_message_locator)
                 )
             )
         except TimeoutException:
@@ -137,8 +153,10 @@ class SearchPage:
         # Пробуем основной локатор
         try:
             # Ждем появления хотя бы одной ссылки с названием книги
-            self.wait.until(EC.presence_of_element_located(self._product_title_locator))
-            title_elements = self.driver.find_elements(*self._product_title_locator)
+            self.wait.until(EC.presence_of_element_located
+                            (self._product_title_locator))
+            title_elements = (self.driver.find_elements
+                              (*self._product_title_locator))
 
             for element in title_elements:
                 title_text = element.text.strip()
@@ -146,7 +164,8 @@ class SearchPage:
                     titles.append(title_text)
 
             allure.attach(
-                f"Найдено элементов по основному локатору: {len(title_elements)}",
+                f"Найдено элементов по основному локатору: "
+                f"{len(title_elements)}",
                 name="main_locator_count",
                 attachment_type=allure.attachment_type.TEXT
             )
@@ -160,28 +179,33 @@ class SearchPage:
 
             # Пробуем альтернативный локатор
             try:
-                title_elements = self.driver.find_elements(*self._product_title_alt_locator)
+                title_elements = (self.driver.find_elements
+                                  (*self._product_title_alt_locator))
                 for element in title_elements:
                     title_text = element.text.strip()
                     if title_text:
                         titles.append(title_text)
 
                 allure.attach(
-                    f"Найдено элементов по альтернативному локатору: {len(title_elements)}",
+                    f"Найдено элементов по альтернативному локатору: "
+                    f"{len(title_elements)}",
                     name="alt_locator_count",
                     attachment_type=allure.attachment_type.TEXT
                 )
             except:
                 pass
 
-        # Если все еще нет результатов, ищем любые ссылки, которые могут быть названиями книг
+        # Если все еще нет результатов, ищем любые ссылки,
+        # которые могут быть названиями книг
         if not titles:
             try:
                 # Ищем все ссылки с путем /product/
-                product_links = self.driver.find_elements(By.CSS_SELECTOR, "a[href*='/product/']")
+                product_links = (self.driver.find_elements
+                                 (By.CSS_SELECTOR,
+                                  "a[href*='/product/']"))
                 for link in product_links:
                     link_text = link.text.strip()
-                    if link_text and len(link_text) > 3:  # Отсекаем слишком короткие тексты
+                    if link_text and len(link_text) > 3:
                         titles.append(link_text)
 
                 allure.attach(
@@ -217,7 +241,8 @@ class SearchPage:
         try:
             # Ищем элемент с таким текстом названия
             elements = self.driver.find_elements(By.XPATH,
-                                                 f"//a[@class='product-card__title' and contains(text(), '{title_text[:20]}')]")
+                f"//a[@class='product-card__title' and contains(text(), "
+                f"'{title_text[:20]}')]")
             if elements:
                 full_title = elements[0].get_attribute("title")
                 if full_title and "(" in full_title and ")" in full_title:
@@ -237,12 +262,15 @@ class SearchPage:
             # Проверяем наличие карточек товаров или ссылок на товары
             cards = self.driver.find_elements(*self._product_card_locator)
             titles = self.driver.find_elements(*self._product_title_locator)
-            links = self.driver.find_elements(By.CSS_SELECTOR, "a[href*='/product/']")
+            links = self.driver.find_elements(By.CSS_SELECTOR,
+                                              "a[href*='/product/']")
 
             has_results = len(cards) > 0 or len(titles) > 0 or len(links) > 0
 
             allure.attach(
-                f"Карточки товаров: {len(cards)}, Названия: {len(titles)}, Ссылки: {len(links)}",
+                f"Карточки товаров: {len(cards)}, "
+                f"Названия: {len(titles)}, "
+                f"Ссылки: {len(links)}",
                 name="results_check",
                 attachment_type=allure.attachment_type.TEXT
             )
@@ -256,7 +284,8 @@ class SearchPage:
     def is_no_results_message_displayed(self) -> bool:
         """Проверяет, отображается ли сообщение 'Ничего не найдено'."""
         try:
-            message = self.driver.find_element(*self._no_results_message_locator)
+            message = (self.driver.find_element
+                       (*self._no_results_message_locator))
             return message.is_displayed()
         except:
             return False
@@ -269,5 +298,7 @@ class SearchPage:
     @allure.step("Проверить значение в поле поиска")
     def get_search_input_value(self) -> str:
         """Возвращает текущее значение в поле поиска."""
-        search_input = self.wait.until(EC.presence_of_element_located(self._search_input_locator))
+        search_input = (self.wait.until
+                    (EC.presence_of_element_located
+                     (self._search_input_locator)))
         return search_input.get_attribute("value")

@@ -1,6 +1,6 @@
 import allure
 import requests
-from typing import Optional, Dict, Any
+from typing import Optional, Dict
 import logging
 
 # Настройка логирования
@@ -18,7 +18,8 @@ class ApiClient:
     def __init__(self):
         self.session = requests.Session()
         self.session.headers.update({
-            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36",
+            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) "
+                          "AppleWebKit/537.36",
             "Accept": "application/json",
             "Content-Type": "application/json",
             "Origin": "https://www.chitai-gorod.ru",
@@ -26,7 +27,8 @@ class ApiClient:
         })
 
     @allure.step("GET запрос к {endpoint}")
-    def get(self, endpoint: str, params: Optional[Dict] = None) -> requests.Response:
+    def get(self, endpoint: str, params: Optional[Dict] = None) \
+            -> requests.Response:
         """Выполняет GET запрос."""
         url = f"{self.BASE_URL}/{endpoint.lstrip('/')}"
 
@@ -51,7 +53,8 @@ class ApiClient:
         return response
 
     @allure.step("POST запрос к {endpoint}")
-    def post(self, endpoint: str, data: Optional[Dict] = None) -> requests.Response:
+    def post(self, endpoint: str, data: Optional[Dict] = None) \
+            -> requests.Response:
         """Выполняет POST запрос."""
         url = f"{self.BASE_URL}/{endpoint.lstrip('/')}"
 
