@@ -2,15 +2,12 @@ import pytest
 from selenium import webdriver
 from selenium.webdriver.chrome.service import Service
 from webdriver_manager.chrome import ChromeDriverManager
-import allure
 import sys
 import os
 
 # Добавляем корневую папку проекта в путь поиска модулей
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
-# Теперь импортируем наш модуль
-from api.client import ApiClient
 
 @pytest.fixture
 def driver():
@@ -31,5 +28,3 @@ def driver():
     yield driver
 
     driver.quit()
-
-
